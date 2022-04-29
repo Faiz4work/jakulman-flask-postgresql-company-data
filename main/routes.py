@@ -13,13 +13,21 @@ config = pdfkit.configuration(wkhtmltopdf=path_wkhtmltopdf)
 main = Blueprint('main', __name__)
 
 
-data = {
-    "name": "faiz",
-    "Email": "faiz@gmail.com",
-    "Phone": "0315843543",
-    "City": "karachi",    
-}
-
+columns = [
+    'Bussiness State', 'Agreement Amp Id', 'Party', 'Counterparty',
+    'Direction', 'Call Currency', 'Disputed Time', 'Agreed Time',
+    'Pledge Accepted Time', 'Pledge Time', 'Sent Time', 'Call Total Call Amount',
+    'Valuation Date', 'Call Agreed Amount', 'Call Difference Amount', 
+    'Agreement Type', 'Entity', 'Agreement Short Name', 'CP Entity', 
+    'CP Agreement Short Name', 'Margincallampid', 'Call Type', 'Exposure',
+    'Call Mta', 'CD Exposure', 'Collateral', 'CP Collateral', 'Conversion Rate',
+    'USD Mta', 'USD Exposure', 'USD Call Amount', 'USD Collateral', 'USD CP Collateral',
+    'USD Threshold', 'USD Call Agreed', 'Issue Time', 'Call to pledge', 
+    'Pledge To Accept', 'Call To Agree', 'Call Complete', 'Difference Amount',
+    'Difference Rate', 'Call Delivery Type', 'Role', 'CP Role', 'Modify Date'
+    
+    
+]
 
 
 
@@ -34,17 +42,16 @@ def home():
         company = request.form.get("company")
         format = request.form.get("format")
         
-        print(name)
-        print(email)
-        print(frequency)
-        print(company)
-        print(format)
-        
         query = "SELECT * from public.tbl_margincall_data WHERE party = 'Jake Bank' LIMIT 100"        
         
         results = execute_query(query)
         
+        df = pd.DataFrame(results, columns=columns)
+        df.to_csv("newresults.csv", index=False)
+        
         return render_template("results.html", results=results)
+
+
 
         # df = pd.read_excel("sample.xlsx")
         # df.to_html("file.html")

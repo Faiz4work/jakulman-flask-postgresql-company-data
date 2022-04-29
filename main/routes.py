@@ -1,36 +1,10 @@
 from flask import Blueprint, render_template, request
 import pandas as pd
-import pdfkit
-from .utils import execute_query
-
-
-path_wkhtmltopdf = r'C:\\Program Files\\wkhtmltopdf\\bin\\wkhtmltopdf.exe'
-config = pdfkit.configuration(wkhtmltopdf=path_wkhtmltopdf)
-# pdfkit.from_url("http://google.com", "out.pdf", configuration=config)
+from .utils import execute_query, convert_to_pdf, columns, remove_timezones
 
 
 
 main = Blueprint('main', __name__)
-
-
-columns = [
-    'Bussiness State', 'Agreement Amp Id', 'Party', 'Counterparty',
-    'Direction', 'Call Currency', 'Disputed Time', 'Agreed Time',
-    'Pledge Accepted Time', 'Pledge Time', 'Sent Time', 'Call Total Call Amount',
-    'Valuation Date', 'Call Agreed Amount', 'Call Difference Amount', 
-    'Agreement Type', 'Entity', 'Agreement Short Name', 'CP Entity', 
-    'CP Agreement Short Name', 'Margincallampid', 'Call Type', 'Exposure',
-    'Call Mta', 'CD Exposure', 'Collateral', 'CP Collateral', 'Conversion Rate',
-    'USD Mta', 'USD Exposure', 'USD Call Amount', 'USD Collateral', 'USD CP Collateral',
-    'USD Threshold', 'USD Call Agreed', 'Issue Time', 'Call to pledge', 
-    'Pledge To Accept', 'Call To Agree', 'Call Complete', 'Difference Amount',
-    'Difference Rate', 'Call Delivery Type', 'Role', 'CP Role', 'Modify Date'
-    
-    
-]
-
-
-
 
 
 @main.route("/", methods=['GET', 'POST'])
@@ -42,14 +16,20 @@ def home():
         company = request.form.get("company")
         format = request.form.get("format")
         
-        query = "SELECT * from public.tbl_margincall_data WHERE party = 'Jake Bank' LIMIT 100"        
+        query = f"SELECT * from public.tbl_margincall_data WHERE party = '{company}' LIMIT 100"        
         
         results = execute_query(query)
         
         df = pd.DataFrame(results, columns=columns)
-        df.to_csv("newresults.csv", index=False)
+        df = remove_timezones(df)
+        if format=='xlsx':
+            df.to_excel(f"{name}.xlsx", index=False)
+        if format=='csv':
+            df.to_csv(f"{name}.csv", index=False)
+        if format=='pdf':
+            convert_to_pdf(name, df)
         
-        return render_template("results.html", results=results)
+        return render_template("index.html")
 
 
 
